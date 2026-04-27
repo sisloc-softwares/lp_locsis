@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Diagnóstico de Maturidade da sua Locadora — Locsis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0C0C1A;
+      --bg2: #121228;
+      --bg3: #181830;
+      --green: #00E87A;
+      --green-d: rgba(0,232,122,0.10);
+      --green-b: rgba(0,232,122,0.32);
+      --purple: #7B4FFF;
+      --purple-d: rgba(123,79,255,0.12);
+      --purple-b: rgba(123,79,255,0.35);
+      --white: #F0F0F8;
+      --w60: rgba(240,240,248,0.60);
+      --w20: rgba(240,240,248,0.20);
+      --w08: rgba(240,240,248,0.08);
+      --red: #FF4444;
+      --orange: #FF8C00;
+      --yellow: #FFD700;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { background: var(--bg); }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--white);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+
+    .screen {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 28px 20px 40px;
+      animation: fadeSlideIn 0.32s ease forwards;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-cta {
+      background: var(--green);
+      color: #000;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      padding: 18px 24px;
+      border-radius: 50px;
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      min-height: 56px;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,232,122,0.22);
+    }
+    .btn-cta:hover { opacity: 0.94; box-shadow: 0 6px 28px rgba(0,232,122,0.32); }
+    .btn-cta:active { transform: scale(0.98); }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg3);
+      border: 1.5px solid var(--w20);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: inherit;
+      font-size: 16px;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .form-input:focus { border-color: var(--green-b); }
+    .form-input.error { border-color: var(--red); }
+    .form-input::placeholder { color: var(--w60); }
+
+    .answer-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      min-height: 64px;
+      border-radius: 14px;
+      border: 1.5px solid transparent;
+      padding: 16px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 600;
+      text-align: left;
+      transition: opacity 0.15s, transform 0.1s, background 0.15s;
+      background: transparent;
+      color: var(--white);
+    }
+    .answer-btn:active { transform: scale(0.98); }
+    .answer-btn.red    { background: rgba(255,68,68,0.10); border-color: rgba(255,68,68,0.32); }
+    .answer-btn.yellow { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.28); }
+    .answer-btn.green  { background: var(--green-d);       border-color: var(--green-b); }
+    .answer-btn.red:hover    { background: rgba(255,68,68,0.16); }
+    .answer-btn.yellow:hover { background: rgba(255,215,0,0.14); }
+    .answer-btn.green:hover  { background: rgba(0,232,122,0.18); }
+    .answer-btn.dim { opacity: 0.35; pointer-events: none; }
+    .answer-btn.selected { border-width: 2px; }
+    .answer-btn.selected.red    { background: rgba(255,68,68,0.22); border-color: #FF4444; }
+    .answer-btn.selected.yellow { background: rgba(255,215,0,0.18); border-color: #FFD700; }
+    .answer-btn.selected.green  { background: rgba(0,232,122,0.22); border-color: var(--green); }
+    .answer-btn:disabled { cursor: default; }
+    .answer-btn:disabled:active { transform: none; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rec-appear { animation: slideDown 0.4s ease forwards; }
+
+    @keyframes badgePop {
+      0%   { opacity: 0; transform: scale(0.8); }
+      60%  { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .badge-pop { animation: badgePop 0.32s ease forwards; }
+
+    .toggle-btn {
+      flex: 1;
+      min-height: 50px;
+      border-radius: 12px;
+      border: 1.5px solid var(--w20);
+      background: transparent;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--w60);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .toggle-btn.active    { background: var(--green-d); border-color: var(--green-b); color: var(--green); }
+    .toggle-btn.active-no { background: rgba(255,68,68,0.10); border-color: rgba(255,68,68,0.32); color: var(--red); }
+
+    @keyframes dot-pulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+      40%           { transform: scale(1);   opacity: 1; }
+    }
+    .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--green); animation: dot-pulse 1.4s infinite ease-in-out; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .check-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--green-d);
+      border: 1.5px solid var(--green-b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--green);
+      margin-top: 1px;
+      font-weight: 700;
+    }
+
+    .gap-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--w08);
+    }
+    .gap-item:last-child { border-bottom: none; }
+
+    .module-badge {
+      background: var(--w08);
+      border: 1px solid var(--w20);
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    a { color: inherit; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect } = React;
+
+    /* ── DATA ──────────────────────────────────────────────────────────── */
+
+    const QUESTIONS = [
+      {
+        question: 'Sua locadora tem CNPJ com atividade de locação registrada?',
+        stepName: 'Formalização',
+        answers: [
+          { label: 'Não',               value: 0, color: 'red' },
+          { label: 'Em processo',       value: 1, color: 'yellow' },
+          { label: 'Sim, regularizado', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Você usa contrato escrito em toda locação?',
+        stepName: 'Contrato',
+        answers: [
+          { label: 'Não uso',       value: 0, color: 'red' },
+          { label: 'Em algumas',    value: 1, color: 'yellow' },
+          { label: 'Sim, em todas', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Tem cadastro organizado de todos os clientes com documentos?',
+        stepName: 'Cadastros',
+        answers: [
+          { label: 'Não',           value: 0, color: 'red' },
+          { label: 'Parcialmente',  value: 1, color: 'yellow' },
+          { label: 'Sim, completo', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Sabe agora o que está disponível, locado e em manutenção?',
+        stepName: 'Estoque',
+        answers: [
+          { label: 'Não',                value: 0, color: 'red' },
+          { label: 'Mais ou menos',      value: 1, color: 'yellow' },
+          { label: 'Sim, em tempo real', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Tem tabela de preços definida por equipamento e período?',
+        stepName: 'Preços',
+        answers: [
+          { label: 'Não, faço de cabeça', value: 0, color: 'red' },
+          { label: 'Tenho, mas não sigo', value: 1, color: 'yellow' },
+          { label: 'Sim, sempre uso',     value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Toda locação gera nota fiscal no momento da saída do equipamento?',
+        stepName: 'Faturamento',
+        answers: [
+          { label: 'Não',         value: 0, color: 'red' },
+          { label: 'Às vezes',    value: 1, color: 'yellow' },
+          { label: 'Sim, sempre', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Controla entradas, saídas e inadimplência separado do pessoal?',
+        stepName: 'Financeiro',
+        answers: [
+          { label: 'Não',           value: 0, color: 'red' },
+          { label: 'Parcialmente',  value: 1, color: 'yellow' },
+          { label: 'Sim, separado', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Usa critérios claros para decidir comprar ou vender equipamento?',
+        stepName: 'Crescimento',
+        answers: [
+          { label: 'Não, vou no feeling',  value: 0, color: 'red' },
+          { label: 'Às vezes',             value: 1, color: 'yellow' },
+          { label: 'Sim, sempre analiso',  value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'O negócio funciona normalmente quando você não está presente?',
+        stepName: 'Delegação',
+        answers: [
+          { label: 'Não',                  value: 0, color: 'red' },
+          { label: 'Com dificuldade',      value: 1, color: 'yellow' },
+          { label: 'Sim, funciona normal', value: 2, color: 'green' },
+        ],
+      },
+      {
+        question: 'Usa algum sistema para controlar locações, estoque e financeiro?',
+        stepName: 'Tecnologia',
+        answers: [
+          { label: 'Não uso nada',       value: 0, color: 'red' },
+          { label: 'Planilha / caderno', value: 1, color: 'yellow' },
+          { label: 'Sim, um sistema',    value: 2, color: 'green' },
+        ],
+      },
+    ];
+
+    const RECS = [
+      {
+        stepNum: 1, stepName: 'Formalização',
+        title: 'Formalize a sua locadora',
+        subtitle: 'A fundação de tudo começa aqui.',
+        checklist: [
+          'Abra um CNPJ adequado para atividade de locação de equipamentos',
+          'Coloque as atividades corretas no cadastro da empresa',
+          'Regularize a emissão de nota fiscal de serviço',
+        ],
+        highlight: 'Formalizar não é custo. É investimento na credibilidade da sua locadora.',
+        why: 'Com a empresa formalizada, fica mais fácil emitir nota, pegar crédito e crescer. Um negócio informal passa pouca confiança e faz você perder oportunidades — clientes grandes exigem nota.',
+        locsisMention: null, story: null,
+        neverPhrase: 'formalizou sua locadora com CNPJ',
+        sometimesPhrase: 'A formalização está em andamento, mas ainda não está completa',
+      },
+      {
+        stepNum: 2, stepName: 'Contrato',
+        title: 'Tenha um contrato (e use sempre)',
+        subtitle: 'No boca a boca, o problema só aparece quando dá dor de cabeça.',
+        checklist: [
+          'Tenha um contrato padrão, por escrito, para toda locação',
+          'Deixe claro: responsabilidades, multas, prazo e forma de pagamento',
+          'O que não está escrito vira discussão. Combine tudo antes',
+        ],
+        highlight: 'O contrato protege os dois lados. Sem ele, você depende da memória — e memória falha.',
+        why: 'O contrato protege você, evita conflitos, dá mais segurança jurídica e mostra que sua locadora é organizada e séria. Não é desconfiança — é profissionalismo.',
+        locsisMention: null, story: null,
+        neverPhrase: 'usa contrato escrito em toda locação',
+        sometimesPhrase: 'Você usa contrato em parte das locações, mas não em todas',
+      },
+      {
+        stepNum: 3, stepName: 'Cadastros',
+        title: 'Organize cadastros e documentos',
+        subtitle: 'Não basta saber que é "o João do depósito".',
+        checklist: [
+          'Cadastro mínimo: nome, CPF/CNPJ, telefone, endereço, e-mail',
+          'Checklist de documentos para novos clientes (CNH, comprovantes)',
+          'Guarde tudo em um lugar só — centralize contratos, documentos e histórico',
+        ],
+        highlight: 'Cadastro organizado é a diferença entre cobrar com segurança e ter prejuízo sem poder fazer nada.',
+        why: 'Cadastro organizado reduz risco de calote e facilita cobrança.',
+        locsisMention: 'No Locsis, o cadastro já vem com checklist de documentos e histórico de locações por cliente.',
+        story: 'Um locador do interior de SP controlava tudo no caderno. Quando um cliente devolveu uma retroescavadeira com dano, não havia contrato nem registro formal. Resultado: R$ 12.000 de prejuízo. Sem nada para cobrar.',
+        neverPhrase: 'mantém cadastro organizado dos seus clientes',
+        sometimesPhrase: 'Seus cadastros existem, mas não estão completos nem centralizados',
+      },
+      {
+        stepNum: 4, stepName: 'Estoque',
+        title: 'Controle seu estoque',
+        subtitle: 'Equipamento parado ou "sumido" é dinheiro jogado fora.',
+        checklist: [
+          'Liste todos os equipamentos: tipo, marca, modelo, número de série',
+          'Marque o status: disponível, locado, em manutenção, reservado',
+          'Acompanhe o que vai sair e o que tem data para voltar',
+        ],
+        highlight: 'Se você não sabe onde está seu equipamento agora, você está perdendo dinheiro agora.',
+        why: 'Controlar o estoque evita perda de dinheiro, melhora o uso dos equipamentos e permite atender mais clientes sem virar bagunça.',
+        locsisMention: 'O Locsis mostra em tempo real o que está disponível, locado, em manutenção ou reservado.',
+        story: null,
+        neverPhrase: 'sabe o status de todo o seu estoque',
+        sometimesPhrase: 'Você tem uma noção do estoque, mas sem controle em tempo real',
+      },
+      {
+        stepNum: 5, stepName: 'Preços',
+        title: 'Estruture preços',
+        subtitle: 'Falar preço de cabeça é receita para perder dinheiro.',
+        checklist: [
+          'Calcule seus custos: compra do equipamento, manutenção, impostos e despesas',
+          'Defina tabela de preços por tipo de equipamento e período de locação',
+          'Crie regras claras para desconto, atraso, diárias extras e taxas',
+        ],
+        highlight: 'Quando o preço é padrão, você negocia com segurança e não precisa "chutar" valor.',
+        why: 'Uma precificação bem pensada garante lucro e evita descontos exagerados que podem te impedir de crescer.',
+        locsisMention: 'Com o Locsis, você monta tabelas de preço por equipamento e período, com regras automáticas de desconto.',
+        story: null,
+        neverPhrase: 'tem tabela de preços definida',
+        sometimesPhrase: 'Tem tabela de preços, mas nem sempre segue na prática',
+      },
+      {
+        stepNum: 6, stepName: 'Faturamento',
+        title: 'Fature tudo (e no prazo)',
+        subtitle: 'O que adianta locar e não faturar?',
+        checklist: [
+          'Emita nota fiscal de toda locação, sem exceção',
+          'Processo claro: equipamento saiu → nota emitida. Sem atraso',
+          'Acompanhe o que já foi faturado e o que está pendente',
+          'Não deixe a cobrança depender da sua memória',
+        ],
+        highlight: 'Faturamento atrasado é dinheiro parado. Faturamento esquecido é dinheiro perdido.',
+        why: 'Sem controle de faturamento, você pode estar locando bem e mesmo assim fechando o mês no vermelho. A conta só fecha quando o dinheiro entra de verdade.',
+        locsisMention: 'No Locsis, o faturamento é vinculado à locação. Quando o equipamento sai, o sistema já sinaliza o que precisa ser faturado.',
+        story: null,
+        neverPhrase: 'emite nota fiscal em toda locação',
+        sometimesPhrase: 'Parte das suas locações sai sem nota fiscal',
+      },
+      {
+        stepNum: 7, stepName: 'Financeiro',
+        title: 'Controle os números',
+        subtitle: 'Misturar dinheiro da empresa com o pessoal é o caminho para perder o controle.',
+        checklist: [
+          'Separe conta bancária da empresa e da pessoa física',
+          'Registre todas as entradas e saídas, inclusive pequenos gastos',
+          'Controle inadimplência e custos por equipamento',
+          'Acompanhe receita, fluxo de caixa, contas a pagar e a receber',
+        ],
+        highlight: 'Com números na mão, você decide com mais segurança e deixa de depender do "achismo".',
+        why: 'Sem controle financeiro você não sabe se está ganhando ou perdendo, nem quando pode investir — o que trava o crescimento.',
+        locsisMention: 'O Locsis centraliza contas a pagar, a receber e inadimplência em um painel simples.',
+        story: null,
+        neverPhrase: 'controla o financeiro separado do pessoal',
+        sometimesPhrase: 'O financeiro está parcialmente separado, mas ainda mistura com pessoal',
+      },
+      {
+        stepNum: 8, stepName: 'Crescimento',
+        title: 'Planeje o crescimento com segurança',
+        subtitle: 'Crescer desorganizado é tão ruim quanto não crescer.',
+        checklist: [
+          'Defina critérios para comprar equipamentos: demanda, taxa de ocupação, retorno',
+          'Avalie se vale a pena vender o que quase não sai ou dá muita manutenção',
+          'Passos pequenos e constantes — não "dar um salto" sem controle',
+        ],
+        highlight: 'Crescimento saudável é aquele que você consegue administrar.',
+        why: 'Crescer com planejamento evita endividamento, reduz risco e faz sua locadora se manter forte no longo prazo.',
+        locsisMention: null, story: null,
+        neverPhrase: 'usa critérios claros para crescer',
+        sometimesPhrase: 'Às vezes analisa antes de comprar, mas nem sempre com critério',
+      },
+      {
+        stepNum: 9, stepName: 'Delegação',
+        title: 'Deixe de ser o "faz tudo"',
+        subtitle: 'No início é normal. Mas isso não sustenta o crescimento.',
+        checklist: [
+          'Liste as tarefas que você faz hoje (atendimento, cobrança, entrega, financeiro)',
+          'Veja o que dá para delegar ou automatizar (ex.: emissão de nota, controle de locações)',
+          'Crie rotinas para não depender só da sua memória e do seu tempo',
+        ],
+        highlight: 'Se a locadora só funciona quando você está presente, você tem um emprego — não um negócio.',
+        why: 'Quando a empresa deixa de depender só de você, ela vira um negócio de verdade: cresce, atende melhor e funciona mesmo quando o dono não está.',
+        locsisMention: null, story: null,
+        neverPhrase: 'consegue delegar tarefas na sua locadora',
+        sometimesPhrase: 'O negócio até roda sem você, mas com dificuldade',
+      },
+      {
+        stepNum: 10, stepName: 'Tecnologia',
+        title: 'Use tecnologia a seu favor',
+        subtitle: 'Ficar preso em papel e planilha aumenta erro e retrabalho.',
+        checklist: [
+          'Deixe de depender de caderno, papéis e planilhas soltas',
+          'Use um sistema simples: clientes, contratos, estoque e financeiro',
+          'Centralize informações em um único lugar, sem procurar dado cada vez',
+        ],
+        highlight: 'Menos trabalho manual = mais tempo para vender e cuidar dos clientes.',
+        why: 'A tecnologia reduz erros, economiza tempo e te dá uma visão clara do negócio — essencial para sair do improviso e crescer com segurança.',
+        locsisMention: null, story: null,
+        neverPhrase: 'usa um sistema de gestão na sua locadora',
+        sometimesPhrase: 'Usa planilha ou caderno, mas não um sistema integrado',
+      },
+    ];
+
+    function getFaixa(score) {
+      if (score <= 5)  return { label: 'INFORMAL',        color: '#FF4444', phrase: 'Sua locadora opera no improviso. Os riscos são altos e o crescimento está travado. Mas a boa notícia: cada passo que você der agora faz diferença imediata.' };
+      if (score <= 10) return { label: 'EM ESTRUTURAÇÃO', color: '#FF8C00', phrase: 'Você já deu alguns passos importantes, mas ainda tem gaps que custam dinheiro. Fechar essas lacunas vai destravar o crescimento.' };
+      if (score <= 15) return { label: 'ORGANIZADA',      color: '#FFD700', phrase: 'Sua base está boa. O próximo nível é integrar e automatizar para ganhar escala sem aumentar a complexidade.' };
+      return                  { label: 'PROFISSIONAL',    color: '#00E87A', phrase: 'Sua locadora está bem organizada. Você está à frente da maioria. O próximo passo é otimizar com tecnologia para escalar com eficiência.' };
+    }
+
+    /* ── HELPERS ───────────────────────────────────────────────────────── */
+
+    function maskPhone(v) {
+      const d = v.replace(/\D/g, '').slice(0, 11);
+      if (d.length === 0) return '';
+      if (d.length <= 2)  return `(${d}`;
+      if (d.length <= 7)  return `(${d.slice(0,2)}) ${d.slice(2)}`;
+      return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+    }
+
+    function validateForm(data) {
+      const e = {};
+      if (!data.name.trim()) e.name = 'Informe seu nome';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) e.email = 'E-mail inválido';
+      if (data.whatsapp.replace(/\D/g, '').length < 10) e.whatsapp = 'WhatsApp inválido';
+      return e;
+    }
+
+    const COLOR_EMOJI = { red: '🔴', yellow: '🟡', green: '🟢' };
+
+    /* ── COMPONENTS ────────────────────────────────────────────────────── */
+
+    function Logo() {
+      return (
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ background:'var(--green)', borderRadius:8, width:38, height:38, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <span style={{ color:'#000', fontWeight:900, fontSize:15, letterSpacing:-0.5 }}>LS</span>
+          </div>
+          <span style={{ fontWeight:800, fontSize:18, letterSpacing:2, color:'var(--white)' }}>LOCSIS</span>
+        </div>
+      );
+    }
+
+    function CheckItem({ text }) {
+      return (
+        <div style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:12 }}>
+          <div className="check-icon">✓</div>
+          <p style={{ color:'var(--w60)', fontSize:15, lineHeight:1.5, marginTop:1 }}>{text}</p>
+        </div>
+      );
+    }
+
+    function BackButton({ onBack }) {
+      return (
+        <button onClick={onBack} style={{
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--w60)',
+          fontSize: 14,
+          fontWeight: 600,
+          fontFamily: 'inherit',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '4px 0',
+        }}>
+          ← Voltar
+        </button>
+      );
+    }
+
+    function IntroScreen({ onStart }) {
+      return (
+        <div className="screen" style={{ display:'flex', flexDirection:'column', gap:28 }}>
+          <Logo />
+
+          <div>
+            <h1 style={{ fontSize:28, fontWeight:900, lineHeight:1.2, marginBottom:12 }}>
+              Diagnóstico de Maturidade da sua Locadora
+            </h1>
+            <p style={{ color:'var(--w60)', fontSize:16, lineHeight:1.6 }}>
+              Responda 10 perguntas rápidas e descubra em que nível sua locadora está — e o que fazer para crescer com segurança.
+            </p>
+          </div>
+
+          <div style={{ background:'var(--bg3)', borderRadius:16, padding:'20px 20px 8px', border:'1px solid var(--w08)' }}>
+            {[
+              { icon:'⏱', text:'Leva menos de 3 minutos' },
+              { icon:'📊', text:'Resultado personalizado com score e recomendações' },
+              { icon:'🔒', text:'Seus dados ficam seguros' },
+            ].map(({ icon, text }) => (
+              <div key={text} style={{ display:'flex', gap:14, alignItems:'center', marginBottom:16 }}>
+                <span style={{ fontSize:22, flexShrink:0 }}>{icon}</span>
+                <span style={{ fontSize:15, fontWeight:500, color:'var(--white)' }}>{text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background:'var(--green-d)', border:'1px solid var(--green-b)', borderRadius:12, padding:'14px 16px' }}>
+            <p style={{ fontSize:13, color:'rgba(0,232,122,0.9)', lineHeight:1.5 }}>
+              Criado pelo time do Locsis, sistema de gestão feito exclusivamente para locadoras de equipamentos.
+            </p>
+          </div>
+
+          <div style={{ marginTop:'auto' }}>
+            <button className="btn-cta" onClick={onStart}>
+              COMEÇAR DIAGNÓSTICO →
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function FormScreen({ onSubmit, onBack }) {
+      const [data, setData] = useState({ name:'', email:'', whatsapp:'' });
+      const [errors, setErrors] = useState({});
+
+      const set = (key, val) => {
+        setData(prev => ({ ...prev, [key]: val }));
+        if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
+      };
+
+      const handleSubmit = () => {
+        const e = validateForm(data);
+        if (Object.keys(e).length) { setErrors(e); return; }
+        onSubmit(data);
+      };
+
+      return (
+        <div className="screen" style={{ display:'flex', flexDirection:'column', gap:24 }}>
+          <BackButton onBack={onBack} />
+          <Logo />
+
+          <div>
+            <h2 style={{ fontSize:22, fontWeight:800, marginBottom:6 }}>Antes de começar</h2>
+            <p style={{ color:'var(--w60)', fontSize:15 }}>Preencha rápido — só o essencial.</p>
+          </div>
+
+          <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+            <div>
+              <label style={{ display:'block', fontSize:12, fontWeight:700, color:'var(--w60)', marginBottom:8, textTransform:'uppercase', letterSpacing:0.8 }}>Nome</label>
+              <input
+                className={`form-input${errors.name ? ' error' : ''}`}
+                type="text"
+                placeholder="Seu nome completo"
+                value={data.name}
+                onChange={e => set('name', e.target.value)}
+                autoComplete="name"
+              />
+              {errors.name && <p style={{ color:'var(--red)', fontSize:12, marginTop:6 }}>{errors.name}</p>}
+            </div>
+
+            <div>
+              <label style={{ display:'block', fontSize:12, fontWeight:700, color:'var(--w60)', marginBottom:8, textTransform:'uppercase', letterSpacing:0.8 }}>E-mail</label>
+              <input
+                className={`form-input${errors.email ? ' error' : ''}`}
+                type="email"
+                placeholder="seu@email.com"
+                value={data.email}
+                onChange={e => set('email', e.target.value)}
+                autoComplete="email"
+                inputMode="email"
+              />
+              {errors.email && <p style={{ color:'var(--red)', fontSize:12, marginTop:6 }}>{errors.email}</p>}
+            </div>
+
+            <div>
+              <label style={{ display:'block', fontSize:12, fontWeight:700, color:'var(--w60)', marginBottom:8, textTransform:'uppercase', letterSpacing:0.8 }}>WhatsApp</label>
+              <input
+                className={`form-input${errors.whatsapp ? ' error' : ''}`}
+                type="tel"
+                placeholder="(00) 00000-0000"
+                value={data.whatsapp}
+                onChange={e => set('whatsapp', maskPhone(e.target.value))}
+                autoComplete="tel"
+                inputMode="tel"
+              />
+              {errors.whatsapp && <p style={{ color:'var(--red)', fontSize:12, marginTop:6 }}>{errors.whatsapp}</p>}
+            </div>
+
+          </div>
+
+          <div style={{ marginTop:8 }}>
+            <button className="btn-cta" onClick={handleSubmit}>
+              INICIAR DIAGNÓSTICO →
+            </button>
+            <p style={{ textAlign:'center', color:'var(--w60)', fontSize:12, marginTop:12 }}>Não se preocupe, não vamos te encher de spam.</p>
+          </div>
+        </div>
+      );
+    }
+
+    function QuizScreen({ questionIndex, onNext, onBack }) {
+      const [selected, setSelected] = useState(null);
+      const [showRec, setShowRec]   = useState(false);
+      const qData = QUESTIONS[questionIndex];
+      const rec   = RECS[questionIndex];
+      const pct   = ((questionIndex + 1) / 10) * 100;
+
+      const handleAnswer = (value) => {
+        if (selected !== null) return;
+        setSelected(value);
+        if (value === 2) {
+          setTimeout(() => onNext(value), 800);
+        } else {
+          setTimeout(() => setShowRec(true), 300);
+        }
+      };
+
+      return (
+        <div className="screen" style={{ display:'flex', flexDirection:'column', gap:24 }}>
+          {/* Back + Progress */}
+          <BackButton onBack={onBack} />
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+              <span style={{ fontSize:13, fontWeight:600, color:'var(--w60)' }}>Pergunta {questionIndex+1} de 10</span>
+              <span style={{ fontSize:13, fontWeight:700, color:'var(--green)' }}>{Math.round(pct)}%</span>
+            </div>
+            <div style={{ height:5, background:'var(--w08)', borderRadius:3, overflow:'hidden' }}>
+              <div style={{ height:'100%', width:`${pct}%`, background:'var(--green)', borderRadius:3, transition:'width 0.4s ease' }} />
+            </div>
+          </div>
+
+          {/* Question */}
+          <div>
+            <p style={{ fontSize:11, fontWeight:700, color:'var(--green)', letterSpacing:1.5, textTransform:'uppercase', marginBottom:14 }}>
+              Passo {questionIndex+1} — {qData.stepName}
+            </p>
+            <h2 style={{ fontSize:21, fontWeight:800, lineHeight:1.35 }}>{qData.question}</h2>
+          </div>
+
+          {/* Answer buttons */}
+          <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            {qData.answers.map(({ label, value, color }) => {
+              const isSelected = selected === value;
+              const isDim      = selected !== null && !isSelected;
+              return (
+                <button
+                  key={value}
+                  disabled={selected !== null}
+                  className={`answer-btn ${color}${isSelected ? ' selected' : ''}${isDim ? ' dim' : ''}`}
+                  onClick={() => handleAnswer(value)}
+                >
+                  <span style={{ fontSize:22 }}>{COLOR_EMOJI[color]}</span>
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Positive feedback badge */}
+          {selected === 2 && (
+            <div className="badge-pop" style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(0,232,122,0.10)', border:'1px solid var(--green-b)', borderRadius:12, padding:'12px 16px' }}>
+              <span style={{ fontSize:18 }}>✅</span>
+              <span style={{ color:'var(--green)', fontWeight:700, fontSize:15 }}>Ótimo! Próxima pergunta...</span>
+            </div>
+          )}
+
+          {/* Inline recommendation */}
+          {showRec && (
+            <div className="rec-appear" style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {/* Header rec */}
+              <div style={{ borderTop:'1px solid var(--w08)', paddingTop:20 }}>
+                <p style={{ fontSize:11, fontWeight:700, color:'var(--green)', letterSpacing:1.5, textTransform:'uppercase', marginBottom:8 }}>
+                  Passo {rec.stepNum} — {rec.stepName}
+                </p>
+                <h3 style={{ fontSize:20, fontWeight:900, lineHeight:1.25, marginBottom:6 }}>{rec.title}</h3>
+                <p style={{ color:'var(--w60)', fontSize:14, lineHeight:1.5 }}>{rec.subtitle}</p>
+              </div>
+
+              {/* Checklist */}
+              <div>
+                {rec.checklist.map((item, i) => <CheckItem key={i} text={item} />)}
+              </div>
+
+              {/* Story */}
+              {rec.story && (
+                <div style={{ background:'linear-gradient(135deg,#0f0f25,#1a1a35)', border:'1px solid var(--w20)', borderRadius:14, padding:'20px 18px' }}>
+                  <div style={{ fontSize:36, color:'var(--green)', lineHeight:0.6, marginBottom:8, fontFamily:'Georgia, serif', fontWeight:700 }}>"</div>
+                  <p style={{ color:'var(--w60)', fontSize:14, lineHeight:1.6, fontStyle:'italic' }}>{rec.story}</p>
+                </div>
+              )}
+
+              {/* Highlight */}
+              <div style={{ background:'var(--green-d)', borderLeft:'3px solid var(--green)', padding:'14px 16px', borderRadius:'0 10px 10px 0' }}>
+                <p style={{ color:'var(--green)', fontWeight:700, fontSize:14, lineHeight:1.5 }}>{rec.highlight}</p>
+              </div>
+
+              {/* Why */}
+              <div style={{ background:'var(--w08)', border:'1px solid var(--w20)', borderRadius:12, padding:'16px' }}>
+                <p style={{ fontSize:11, fontWeight:700, color:'var(--green)', letterSpacing:1.2, textTransform:'uppercase', marginBottom:8 }}>Por que isso importa</p>
+                <p style={{ color:'var(--w60)', fontSize:14, lineHeight:1.6 }}>{rec.why}</p>
+              </div>
+
+              {/* Locsis mention */}
+              {rec.locsisMention && (
+                <div style={{ background:'var(--purple-d)', border:'1px solid var(--purple-b)', borderRadius:12, padding:'14px 16px', display:'flex', gap:12, alignItems:'flex-start' }}>
+                  <div style={{ background:'rgba(123,79,255,0.3)', borderRadius:6, width:30, height:30, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <span style={{ color:'#c4aaff', fontWeight:900, fontSize:11 }}>LS</span>
+                  </div>
+                  <p style={{ color:'#c4aaff', fontSize:14, lineHeight:1.5 }}>{rec.locsisMention}</p>
+                </div>
+              )}
+
+              {/* Next button */}
+              <button className="btn-cta" onClick={() => onNext(selected)}>
+                {questionIndex < 9 ? 'PRÓXIMA PERGUNTA →' : 'VER MEU RESULTADO →'}
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+
+    function LoadingScreen({ onDone }) {
+      useEffect(() => {
+        const t = setTimeout(onDone, 2500);
+        return () => clearTimeout(t);
+      }, []);
+
+      return (
+        <div className="screen" style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:24 }}>
+          <Logo />
+          <div style={{ marginTop:32, textAlign:'center' }}>
+            <div style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:28 }}>
+              <div className="dot" />
+              <div className="dot" />
+              <div className="dot" />
+            </div>
+            <h2 style={{ fontSize:22, fontWeight:800, marginBottom:10 }}>Analisando suas respostas...</h2>
+            <p style={{ color:'var(--w60)', fontSize:15 }}>Preparando seu diagnóstico personalizado.</p>
+          </div>
+        </div>
+      );
+    }
+
+    function GaugeSVG({ score }) {
+      const [displayScore, setDisplayScore] = useState(0);
+
+      useEffect(() => {
+        const t = setTimeout(() => setDisplayScore(score), 200);
+        return () => clearTimeout(t);
+      }, [score]);
+
+      const angle = -90 + (displayScore / 20) * 180;
+      const faixa = getFaixa(score);
+
+      return (
+        <div>
+          <svg viewBox="0 0 220 125" style={{ width:'100%', maxWidth:340, display:'block', margin:'0 auto', overflow:'visible' }}>
+            <path d="M 15 110 A 95 95 0 0 0 205 110" fill="none" stroke="rgba(240,240,248,0.08)" strokeWidth="16" strokeLinecap="butt" />
+
+            <path d="M 15 110 A 95 95 0 0 0 42.83 42.83"  fill="none" stroke="#FF4444" strokeWidth="16" strokeLinecap="butt" />
+            <path d="M 42.83 42.83 A 95 95 0 0 0 110 15"   fill="none" stroke="#FF8C00" strokeWidth="16" strokeLinecap="butt" />
+            <path d="M 110 15 A 95 95 0 0 0 177.17 42.83"  fill="none" stroke="#FFD700" strokeWidth="16" strokeLinecap="butt" />
+            <path d="M 177.17 42.83 A 95 95 0 0 0 205 110" fill="none" stroke="#00E87A" strokeWidth="16" strokeLinecap="butt" />
+
+            <g style={{
+              transform: `rotate(${angle}deg)`,
+              transformOrigin: '110px 110px',
+              transition: 'transform 1.6s cubic-bezier(0.25, 1, 0.5, 1)'
+            }}>
+              <line x1="110" y1="110" x2="110" y2="22" stroke="white" strokeWidth="3" strokeLinecap="round" />
+            </g>
+
+            <circle cx="110" cy="110" r="9" fill="var(--bg)" stroke="white" strokeWidth="2" />
+            <circle cx="110" cy="110" r="4" fill="white" />
+          </svg>
+
+          <div style={{ textAlign:'center', marginTop:10 }}>
+            <div style={{ fontSize:54, fontWeight:900, lineHeight:1, letterSpacing:-2 }}>
+              {score}<span style={{ fontSize:28, color:'var(--w60)', fontWeight:700 }}>/20</span>
+            </div>
+            <div style={{ fontSize:13, fontWeight:800, color:faixa.color, letterSpacing:2.5, textTransform:'uppercase', marginTop:6 }}>{faixa.label}</div>
+          </div>
+        </div>
+      );
+    }
+
+    function ResultScreen({ score, answers, onCTA, onBack }) {
+      const faixa      = getFaixa(score);
+      const pendingRecs = answers.map((a, i) => a < 2 ? i : -1).filter(i => i >= 0);
+      const strengths   = answers.map((a, i) => a === 2 ? i : -1).filter(i => i >= 0);
+
+      return (
+        <div className="screen" style={{ display:'flex', flexDirection:'column', gap:28 }}>
+          <BackButton onBack={onBack} />
+          <Logo />
+
+          <div style={{ textAlign:'center' }}>
+            <h2 style={{ fontSize:13, fontWeight:700, color:'var(--w60)', letterSpacing:1.8, textTransform:'uppercase', marginBottom:18 }}>Seu Resultado</h2>
+            <GaugeSVG score={score} />
+          </div>
+
+          <div style={{ background:'var(--bg3)', border:'1px solid var(--w08)', borderRadius:14, padding:'18px 18px' }}>
+            <p style={{ color:'var(--white)', fontSize:15, lineHeight:1.6, textAlign:'center' }}>{faixa.phrase}</p>
+          </div>
+
+          {pendingRecs.length > 0 && (
+            <div>
+              <h3 style={{ fontSize:17, fontWeight:800, marginBottom:4 }}>Suas áreas de melhoria prioritária</h3>
+              <p style={{ color:'var(--w60)', fontSize:13, marginBottom:14 }}>Foque nesses pontos primeiro:</p>
+              <div style={{ background:'var(--bg3)', borderRadius:14, padding:'4px 16px', border:'1px solid var(--w08)' }}>
+                {pendingRecs.map(idx => (
+                  <div key={idx} className="gap-item">
+                    <span style={{ fontSize:18, marginTop:1 }}>{answers[idx] === 0 ? '🔴' : '🟡'}</span>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14, marginBottom:2 }}>{RECS[idx].stepName}</div>
+                      <div style={{ color:'var(--w60)', fontSize:13, lineHeight:1.4 }}>
+                        {answers[idx] === 0
+                          ? `Você ainda não ${RECS[idx].neverPhrase}`
+                          : RECS[idx].sometimesPhrase}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {strengths.length > 0 && (
+            <div>
+              <h3 style={{ fontSize:17, fontWeight:800, marginBottom:12 }}>O que você já faz bem</h3>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                {strengths.map(idx => (
+                  <div key={idx} style={{ display:'flex', alignItems:'center', gap:6, background:'var(--green-d)', border:'1px solid var(--green-b)', borderRadius:20, padding:'7px 13px' }}>
+                    <span style={{ color:'var(--green)', fontSize:12, fontWeight:700 }}>✓</span>
+                    <span style={{ fontSize:13, fontWeight:600, color:'var(--green)' }}>{RECS[idx].stepName}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button className="btn-cta" onClick={onCTA}>
+            VER COMO O LOCSIS PODE AJUDAR →
+          </button>
+        </div>
+      );
+    }
+
+    function CTAScreen({ onBack }) {
+      const modules = ['Estoque', 'Contratos', 'Faturamento', 'Financeiro', 'Clientes'];
+
+      return (
+        <div className="screen" style={{ display:'flex', flexDirection:'column', gap:28, alignItems:'center', textAlign:'center' }}>
+          <div style={{ alignSelf:'flex-start' }}><BackButton onBack={onBack} /></div>
+          <Logo />
+
+          <div>
+            <h1 style={{ fontSize:26, fontWeight:900, lineHeight:1.2, marginBottom:14 }}>
+              O sistema feito exclusivamente para locadoras de equipamentos.
+            </h1>
+            <p style={{ color:'var(--w60)', fontSize:15, lineHeight:1.7 }}>
+              Controle de estoque, contratos, faturamento e financeiro — tudo em um lugar só. Simples de usar, sem precisar de treinamento técnico.
+            </p>
+          </div>
+
+          <div style={{ display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center' }}>
+            {modules.map(m => (
+              <div key={m} className="module-badge">{m}</div>
+            ))}
+          </div>
+
+          <div style={{ width:'100%' }}>
+            <a href="https://locsis.com" target="_blank" rel="noopener noreferrer">
+              <button className="btn-cta" style={{ fontSize:16 }}>
+                TESTE GRÁTIS POR 15 DIAS →
+              </button>
+            </a>
+            <p style={{ color:'var(--w60)', fontSize:13, marginTop:10 }}>Sem cartão de crédito. Sem compromisso.</p>
+          </div>
+
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center' }}>
+            {['100% ONLINE', 'FÁCIL DE USAR', 'PLANOS QUE CABEM NO SEU BOLSO'].map(b => (
+              <div key={b} style={{ background:'var(--w08)', borderRadius:20, padding:'5px 12px', fontSize:11, fontWeight:700, color:'var(--w60)', letterSpacing:0.5 }}>{b}</div>
+            ))}
+          </div>
+
+          <div style={{ marginTop:8, padding:'22px 20px', background:'var(--bg3)', borderRadius:16, border:'1px solid var(--w08)', width:'100%' }}>
+            <p style={{ fontSize:13, color:'var(--w60)', lineHeight:1.6 }}>
+              Junte-se às locadoras que já saíram do improviso. O Locsis foi criado por quem conhece o dia a dia de quem loca — feito para simplificar, não complicar.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── APP ───────────────────────────────────────────────────────────── */
+
+    function App() {
+      const [state, setState] = useState({
+        step: 'intro',
+        formData: { name:'', email:'', whatsapp:'' },
+        currentQuestion: 0,
+        answers: [],
+        totalScore: 0,
+      });
+
+      const go = (updates) => {
+        window.scrollTo(0, 0);
+        setState(prev => ({ ...prev, ...updates }));
+      };
+
+      const handleFormSubmit = (formData) => go({ step:'quiz', formData });
+
+      const handleNext = (value) => {
+        const newAnswers = [...state.answers, value];
+        const isLast = state.currentQuestion === 9;
+        if (isLast) {
+          go({ answers: newAnswers, totalScore: newAnswers.reduce((s, v) => s + v, 0), step: 'loading' });
+        } else {
+          go({ answers: newAnswers, currentQuestion: state.currentQuestion + 1 });
+        }
+      };
+
+      const goBack = () => {
+        window.scrollTo(0, 0);
+        switch (state.step) {
+          case 'form':
+            setState(prev => ({ ...prev, step: 'intro' }));
+            break;
+          case 'quiz':
+            if (state.currentQuestion === 0) {
+              setState(prev => ({ ...prev, step: 'form' }));
+            } else {
+              setState(prev => ({
+                ...prev,
+                currentQuestion: prev.currentQuestion - 1,
+                answers: prev.answers.slice(0, -1),
+              }));
+            }
+            break;
+          case 'result':
+            setState(prev => ({
+              ...prev,
+              step: 'quiz',
+              currentQuestion: 9,
+              answers: prev.answers.slice(0, 9),
+            }));
+            break;
+          case 'cta':
+            setState(prev => ({ ...prev, step: 'result' }));
+            break;
+        }
+      };
+
+      const render = () => {
+        switch (state.step) {
+          case 'intro':
+            return <IntroScreen key="intro" onStart={() => go({ step:'form' })} />;
+          case 'form':
+            return <FormScreen key="form" onSubmit={handleFormSubmit} onBack={goBack} />;
+          case 'quiz':
+            return <QuizScreen key={`q${state.currentQuestion}`} questionIndex={state.currentQuestion} onNext={handleNext} onBack={goBack} />;
+          case 'loading':
+            return <LoadingScreen key="loading" onDone={() => go({ step:'result' })} />;
+          case 'result':
+            return <ResultScreen key="result" score={state.totalScore} answers={state.answers} onCTA={() => go({ step:'cta' })} onBack={goBack} />;
+          case 'cta':
+            return <CTAScreen key="cta" onBack={goBack} />;
+          default:
+            return null;
+        }
+      };
+
+      return <div>{render()}</div>;
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
