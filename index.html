@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Diagnóstico de Maturidade da sua Locadora — Locsis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -105,6 +105,7 @@
       font-family: inherit;
       font-size: 17px;
       font-weight: 600;
+      line-height: 1.3;
       text-align: left;
       transition: opacity 0.15s, transform 0.1s, background 0.15s;
       background: transparent;
@@ -126,10 +127,10 @@
     .answer-btn:disabled:active { transform: none; }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; max-height: 0; transform: translateY(-10px); }
+      to   { opacity: 1; max-height: 2200px; transform: translateY(0); }
     }
-    .rec-appear { animation: slideDown 0.4s ease forwards; }
+    .rec-appear { animation: slideDown 0.4s ease forwards; overflow: hidden; }
 
     @keyframes badgePop {
       0%   { opacity: 0; transform: scale(0.8); }
@@ -208,40 +209,40 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel" data-presets="env,react">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     /* ── DATA ──────────────────────────────────────────────────────────── */
 
     const QUESTIONS = [
       {
-        question: 'Sua locadora tem CNPJ com atividade de locação registrada?',
+        question: 'Sua locadora tem CNPJ regularizado para atuar com locação de equipamentos?',
         stepName: 'Formalização',
         answers: [
-          { label: 'Não',               value: 0, color: 'red' },
-          { label: 'Em processo',       value: 1, color: 'yellow' },
-          { label: 'Sim, regularizado', value: 2, color: 'green' },
+          { label: 'Não tenho CNPJ',                         value: 0, color: 'red' },
+          { label: 'Tenho CNPJ, mas não sei se está adequado', value: 1, color: 'yellow' },
+          { label: 'Sim, está regularizado',                 value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Você usa contrato escrito em toda locação?',
+        question: 'Você usa contrato escrito e assinado em toda locação?',
         stepName: 'Contrato',
         answers: [
-          { label: 'Não uso',       value: 0, color: 'red' },
-          { label: 'Em algumas',    value: 1, color: 'yellow' },
-          { label: 'Sim, em todas', value: 2, color: 'green' },
+          { label: 'Não uso contrato',       value: 0, color: 'red' },
+          { label: 'Uso em algumas locações', value: 1, color: 'yellow' },
+          { label: 'Uso em todas',           value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Tem cadastro organizado de todos os clientes com documentos?',
+        question: 'Você mantém cadastro completo dos clientes, com documentos e histórico de locações?',
         stepName: 'Cadastros',
         answers: [
-          { label: 'Não',           value: 0, color: 'red' },
-          { label: 'Parcialmente',  value: 1, color: 'yellow' },
-          { label: 'Sim, completo', value: 2, color: 'green' },
+          { label: 'Não tenho cadastro organizado', value: 0, color: 'red' },
+          { label: 'Tenho cadastro incompleto',     value: 1, color: 'yellow' },
+          { label: 'Sim, completo e com histórico', value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Sabe agora o que está disponível, locado e em manutenção?',
+        question: 'Você sabe, agora, quais equipamentos estão disponíveis, locados ou em manutenção?',
         stepName: 'Estoque',
         answers: [
           { label: 'Não',                value: 0, color: 'red' },
@@ -250,57 +251,57 @@
         ],
       },
       {
-        question: 'Tem tabela de preços definida por equipamento e período?',
+        question: 'Você tem tabela de preços e regras de cobrança por equipamento, período, atraso e desconto?',
         stepName: 'Preços',
         answers: [
-          { label: 'Não, faço de cabeça', value: 0, color: 'red' },
-          { label: 'Tenho, mas não sigo', value: 1, color: 'yellow' },
-          { label: 'Sim, sempre uso',     value: 2, color: 'green' },
+          { label: 'Não, defino de cabeça',          value: 0, color: 'red' },
+          { label: 'Tenho tabela, mas uso sem padrão', value: 1, color: 'yellow' },
+          { label: 'Sim, sigo regras definidas',     value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Toda locação gera nota fiscal no momento da saída do equipamento?',
+        question: 'Você controla e emite corretamente as notas fiscais das locações?',
         stepName: 'Faturamento',
         answers: [
-          { label: 'Não',         value: 0, color: 'red' },
-          { label: 'Às vezes',    value: 1, color: 'yellow' },
-          { label: 'Sim, sempre', value: 2, color: 'green' },
+          { label: 'Não tenho esse controle',           value: 0, color: 'red' },
+          { label: 'Faço em parte das locações',        value: 1, color: 'yellow' },
+          { label: 'Sim, controlo e emito corretamente', value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Controla entradas, saídas e inadimplência separado do pessoal?',
+        question: 'Você controla o financeiro da locadora separado das finanças pessoais?',
         stepName: 'Financeiro',
         answers: [
-          { label: 'Não',           value: 0, color: 'red' },
-          { label: 'Parcialmente',  value: 1, color: 'yellow' },
-          { label: 'Sim, separado', value: 2, color: 'green' },
+          { label: 'Não, misturo tudo',           value: 0, color: 'red' },
+          { label: 'Parcialmente',                value: 1, color: 'yellow' },
+          { label: 'Sim, separado e organizado',  value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Usa critérios claros para decidir comprar ou vender equipamento?',
+        question: 'Você usa dados para decidir comprar, vender ou manter equipamentos?',
         stepName: 'Crescimento',
         answers: [
-          { label: 'Não, vou no feeling',  value: 0, color: 'red' },
-          { label: 'Às vezes',             value: 1, color: 'yellow' },
-          { label: 'Sim, sempre analiso',  value: 2, color: 'green' },
+          { label: 'Não, decido no feeling',          value: 0, color: 'red' },
+          { label: 'Às vezes olho alguns números',    value: 1, color: 'yellow' },
+          { label: 'Sim, analiso demanda, custo e retorno', value: 2, color: 'green' },
         ],
       },
       {
         question: 'O negócio funciona normalmente quando você não está presente?',
         stepName: 'Delegação',
         answers: [
-          { label: 'Não',                  value: 0, color: 'red' },
-          { label: 'Com dificuldade',      value: 1, color: 'yellow' },
-          { label: 'Sim, funciona normal', value: 2, color: 'green' },
+          { label: 'Não, depende de mim',          value: 0, color: 'red' },
+          { label: 'Funciona, mas com dificuldade', value: 1, color: 'yellow' },
+          { label: 'Sim, a equipe segue os processos', value: 2, color: 'green' },
         ],
       },
       {
-        question: 'Usa algum sistema para controlar locações, estoque e financeiro?',
+        question: 'Você usa uma ferramenta centralizada para controlar locações, estoque e financeiro?',
         stepName: 'Tecnologia',
         answers: [
-          { label: 'Não uso nada',       value: 0, color: 'red' },
-          { label: 'Planilha / caderno', value: 1, color: 'yellow' },
-          { label: 'Sim, um sistema',    value: 2, color: 'green' },
+          { label: 'Não uso ferramenta',                         value: 0, color: 'red' },
+          { label: 'Uso planilhas, caderno ou controles separados', value: 1, color: 'yellow' },
+          { label: 'Sim, uso sistema centralizado',              value: 2, color: 'green' },
         ],
       },
     ];
@@ -318,8 +319,8 @@
         highlight: 'Formalizar não é custo. É investimento na credibilidade da sua locadora.',
         why: 'Com a empresa formalizada, fica mais fácil emitir nota, pegar crédito e crescer. Um negócio informal passa pouca confiança e faz você perder oportunidades — clientes grandes exigem nota.',
         locsisMention: null, story: null,
-        neverPhrase: 'formalizou sua locadora com CNPJ',
-        sometimesPhrase: 'A formalização está em andamento, mas ainda não está completa',
+        neverPhrase: 'regularizou sua locadora com CNPJ',
+        sometimesPhrase: 'Você tem CNPJ, mas ainda falta confirmar se a atividade está adequada',
       },
       {
         stepNum: 2, stepName: 'Contrato',
@@ -334,7 +335,7 @@
         why: 'O contrato protege você, evita conflitos, dá mais segurança jurídica e mostra que sua locadora é organizada e séria. Não é desconfiança — é profissionalismo.',
         locsisMention: null, story: null,
         neverPhrase: 'usa contrato escrito em toda locação',
-        sometimesPhrase: 'Você usa contrato em parte das locações, mas não em todas',
+        sometimesPhrase: 'Você usa contrato em parte das locações, mas ainda sem padrão para todas',
       },
       {
         stepNum: 3, stepName: 'Cadastros',
@@ -350,7 +351,7 @@
         locsisMention: 'No Locsis, o cadastro já vem com checklist de documentos e histórico de locações por cliente.',
         story: 'Um locador do interior de SP controlava tudo no caderno. Quando um cliente devolveu uma retroescavadeira com dano, não havia contrato nem registro formal. Resultado: R$ 12.000 de prejuízo. Sem nada para cobrar.',
         neverPhrase: 'mantém cadastro organizado dos seus clientes',
-        sometimesPhrase: 'Seus cadastros existem, mas não estão completos nem centralizados',
+        sometimesPhrase: 'Seus cadastros existem, mas ainda estão incompletos ou sem histórico centralizado',
       },
       {
         stepNum: 4, stepName: 'Estoque',
@@ -382,7 +383,7 @@
         locsisMention: 'Com o Locsis, você monta tabelas de preço por equipamento e período, com regras automáticas de desconto.',
         story: null,
         neverPhrase: 'tem tabela de preços definida',
-        sometimesPhrase: 'Tem tabela de preços, mas nem sempre segue na prática',
+        sometimesPhrase: 'Você tem tabela, mas ainda usa valores e regras sem padrão',
       },
       {
         stepNum: 6, stepName: 'Faturamento',
@@ -399,7 +400,7 @@
         locsisMention: 'No Locsis, o faturamento é vinculado à locação. Quando o equipamento sai, o sistema já sinaliza o que precisa ser faturado.',
         story: null,
         neverPhrase: 'emite nota fiscal em toda locação',
-        sometimesPhrase: 'Parte das suas locações sai sem nota fiscal',
+        sometimesPhrase: 'Parte das suas locações ainda fica sem controle fiscal completo',
       },
       {
         stepNum: 7, stepName: 'Financeiro',
@@ -416,7 +417,7 @@
         locsisMention: 'O Locsis centraliza contas a pagar, a receber e inadimplência em um painel simples.',
         story: null,
         neverPhrase: 'controla o financeiro separado do pessoal',
-        sometimesPhrase: 'O financeiro está parcialmente separado, mas ainda mistura com pessoal',
+        sometimesPhrase: 'O financeiro está parcialmente separado, mas ainda mistura com o pessoal',
       },
       {
         stepNum: 8, stepName: 'Crescimento',
@@ -431,7 +432,7 @@
         why: 'Crescer com planejamento evita endividamento, reduz risco e faz sua locadora se manter forte no longo prazo.',
         locsisMention: null, story: null,
         neverPhrase: 'usa critérios claros para crescer',
-        sometimesPhrase: 'Às vezes analisa antes de comprar, mas nem sempre com critério',
+        sometimesPhrase: 'Às vezes usa alguns números, mas ainda decide sem critério consistente',
       },
       {
         stepNum: 9, stepName: 'Delegação',
@@ -446,7 +447,7 @@
         why: 'Quando a empresa deixa de depender só de você, ela vira um negócio de verdade: cresce, atende melhor e funciona mesmo quando o dono não está.',
         locsisMention: null, story: null,
         neverPhrase: 'consegue delegar tarefas na sua locadora',
-        sometimesPhrase: 'O negócio até roda sem você, mas com dificuldade',
+        sometimesPhrase: 'O negócio até roda sem você, mas ainda depende muito da sua presença',
       },
       {
         stepNum: 10, stepName: 'Tecnologia',
@@ -460,8 +461,31 @@
         highlight: 'Menos trabalho manual = mais tempo para vender e cuidar dos clientes.',
         why: 'A tecnologia reduz erros, economiza tempo e te dá uma visão clara do negócio — essencial para sair do improviso e crescer com segurança.',
         locsisMention: null, story: null,
-        neverPhrase: 'usa um sistema de gestão na sua locadora',
-        sometimesPhrase: 'Usa planilha ou caderno, mas não um sistema integrado',
+        neverPhrase: 'usa uma ferramenta centralizada de gestão na sua locadora',
+        sometimesPhrase: 'Você usa controles separados, mas ainda não tem uma gestão centralizada',
+      },
+    ];
+
+    const DIMENSIONS = [
+      {
+        title: 'Base documental',
+        description: 'CNPJ, contratos, cadastros e notas',
+        questionIndexes: [0, 1, 2, 5],
+      },
+      {
+        title: 'Operação',
+        description: 'Estoque, preços e rotina de locação',
+        questionIndexes: [3, 4],
+      },
+      {
+        title: 'Gestão',
+        description: 'Financeiro, crescimento e delegação',
+        questionIndexes: [6, 7, 8],
+      },
+      {
+        title: 'Tecnologia',
+        description: 'Centralização dos controles',
+        questionIndexes: [9],
       },
     ];
 
@@ -470,6 +494,12 @@
       if (score <= 10) return { label: 'EM ESTRUTURAÇÃO', color: '#FF8C00', phrase: 'Você já deu alguns passos importantes, mas ainda tem gaps que custam dinheiro. Fechar essas lacunas vai destravar o crescimento.' };
       if (score <= 15) return { label: 'ORGANIZADA',      color: '#FFD700', phrase: 'Sua base está boa. O próximo nível é integrar e automatizar para ganhar escala sem aumentar a complexidade.' };
       return                  { label: 'PROFISSIONAL',    color: '#00E87A', phrase: 'Sua locadora está bem organizada. Você está à frente da maioria. O próximo passo é otimizar com tecnologia para escalar com eficiência.' };
+    }
+
+    function getDimensionStatus(percent) {
+      if (percent < 40) return { label: 'Crítico', color: 'var(--red)' };
+      if (percent < 70) return { label: 'Atenção', color: 'var(--orange)' };
+      return { label: 'Forte', color: 'var(--green)' };
     }
 
     /* ── HELPERS ───────────────────────────────────────────────────────── */
@@ -658,17 +688,32 @@
     function QuizScreen({ questionIndex, onNext, onBack }) {
       const [selected, setSelected] = useState(null);
       const [showRec, setShowRec]   = useState(false);
+      const timerRef = useRef(null);
       const qData = QUESTIONS[questionIndex];
       const rec   = RECS[questionIndex];
       const pct   = ((questionIndex + 1) / 10) * 100;
+
+      useEffect(() => {
+        return () => {
+          if (timerRef.current) clearTimeout(timerRef.current);
+        };
+      }, []);
+
+      const schedule = (callback, delay) => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+          timerRef.current = null;
+          callback();
+        }, delay);
+      };
 
       const handleAnswer = (value) => {
         if (selected !== null) return;
         setSelected(value);
         if (value === 2) {
-          setTimeout(() => onNext(value), 800);
+          schedule(() => onNext(value), 800);
         } else {
-          setTimeout(() => setShowRec(true), 300);
+          schedule(() => setShowRec(true), 300);
         }
       };
 
@@ -808,36 +853,99 @@
         return () => clearTimeout(t);
       }, [score]);
 
-      const angle = -90 + (displayScore / 20) * 180;
       const faixa = getFaixa(score);
+      const cx = 130;
+      const cy = 124;
+      const radius = 96;
+      const arcLength = Math.PI * radius;
+      const progress = Math.max(0, Math.min(displayScore / 20, 1));
+      const dashOffset = arcLength * (1 - progress);
+
+      const pointOnGauge = (value, pointRadius = radius) => {
+        const theta = Math.PI * (1 - value / 20);
+        return {
+          x: cx + Math.cos(theta) * pointRadius,
+          y: cy - Math.sin(theta) * pointRadius,
+        };
+      };
+
+      const marker = pointOnGauge(displayScore);
+      const ticks = [0, 5, 10, 15, 20];
 
       return (
-        <div>
-          <svg viewBox="0 0 220 125" style={{ width:'100%', maxWidth:340, display:'block', margin:'0 auto', overflow:'visible' }}>
-            <path d="M 15 110 A 95 95 0 0 0 205 110" fill="none" stroke="rgba(240,240,248,0.08)" strokeWidth="16" strokeLinecap="butt" />
+        <div style={{ background:'linear-gradient(180deg, rgba(240,240,248,0.06), rgba(240,240,248,0.025))', border:'1px solid var(--w08)', borderRadius:18, padding:'18px 18px 16px', boxShadow:'0 16px 44px rgba(0,0,0,0.18)' }}>
+          <div style={{ position:'relative', maxWidth:360, height:180, margin:'0 auto' }}>
+            <svg
+              viewBox="0 0 260 154"
+              role="img"
+              aria-label={`Pontuação ${score} de 20. Faixa ${faixa.label}.`}
+              style={{ width:'100%', display:'block', overflow:'visible' }}
+            >
+              <defs>
+                <linearGradient id="gaugeProgress" x1="34" y1="0" x2="226" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FF4444" />
+                  <stop offset="43%" stopColor="#FF8C00" />
+                  <stop offset="70%" stopColor="#FFD700" />
+                  <stop offset="100%" stopColor="#00E87A" />
+                </linearGradient>
+                <filter id="gaugeMarkerShadow" x="-80%" y="-80%" width="260%" height="260%">
+                  <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#000000" floodOpacity="0.36" />
+                </filter>
+              </defs>
 
-            <path d="M 15 110 A 95 95 0 0 0 42.83 42.83"  fill="none" stroke="#FF4444" strokeWidth="16" strokeLinecap="butt" />
-            <path d="M 42.83 42.83 A 95 95 0 0 0 110 15"   fill="none" stroke="#FF8C00" strokeWidth="16" strokeLinecap="butt" />
-            <path d="M 110 15 A 95 95 0 0 0 177.17 42.83"  fill="none" stroke="#FFD700" strokeWidth="16" strokeLinecap="butt" />
-            <path d="M 177.17 42.83 A 95 95 0 0 0 205 110" fill="none" stroke="#00E87A" strokeWidth="16" strokeLinecap="butt" />
+              <path d="M 34 124 A 96 96 0 0 1 226 124" fill="none" stroke="rgba(240,240,248,0.09)" strokeWidth="22" strokeLinecap="round" />
+              <path
+                d="M 34 124 A 96 96 0 0 1 226 124"
+                fill="none"
+                stroke="url(#gaugeProgress)"
+                strokeWidth="18"
+                strokeLinecap="round"
+                strokeDasharray={arcLength}
+                strokeDashoffset={dashOffset}
+                style={{ transition:'stroke-dashoffset 1.4s cubic-bezier(0.25, 1, 0.5, 1)' }}
+              />
 
-            <g style={{
-              transform: `rotate(${angle}deg)`,
-              transformOrigin: '110px 110px',
-              transition: 'transform 1.6s cubic-bezier(0.25, 1, 0.5, 1)'
-            }}>
-              <line x1="110" y1="110" x2="110" y2="22" stroke="white" strokeWidth="3" strokeLinecap="round" />
-            </g>
+              {ticks.map(value => {
+                const inner = pointOnGauge(value, value === 0 || value === 20 ? 78 : 82);
+                const outer = pointOnGauge(value, 92);
+                return (
+                  <line
+                    key={value}
+                    x1={inner.x}
+                    y1={inner.y}
+                    x2={outer.x}
+                    y2={outer.y}
+                    stroke="rgba(240,240,248,0.24)"
+                    strokeWidth={value === 0 || value === 10 || value === 20 ? 2 : 1.5}
+                    strokeLinecap="round"
+                  />
+                );
+              })}
 
-            <circle cx="110" cy="110" r="9" fill="var(--bg)" stroke="white" strokeWidth="2" />
-            <circle cx="110" cy="110" r="4" fill="white" />
-          </svg>
+              {displayScore > 0 && (
+                <g filter="url(#gaugeMarkerShadow)" style={{ transition:'transform 1.4s cubic-bezier(0.25, 1, 0.5, 1)' }}>
+                  <circle cx={marker.x} cy={marker.y} r="9" fill="var(--bg)" stroke={faixa.color} strokeWidth="4" />
+                  <circle cx={marker.x} cy={marker.y} r="3.5" fill="#FFFFFF" />
+                </g>
+              )}
 
-          <div style={{ textAlign:'center', marginTop:10 }}>
-            <div style={{ fontSize:54, fontWeight:900, lineHeight:1, letterSpacing:-2 }}>
-              {score}<span style={{ fontSize:28, color:'var(--w60)', fontWeight:700 }}>/20</span>
+              <text x="34" y="145" fill="rgba(240,240,248,0.52)" fontSize="11" fontWeight="800">0</text>
+              <text x="226" y="145" textAnchor="end" fill="rgba(240,240,248,0.52)" fontSize="11" fontWeight="800">20</text>
+            </svg>
+
+            <div style={{ position:'absolute', left:0, right:0, top:66, textAlign:'center', pointerEvents:'none' }}>
+              <p style={{ color:'var(--w60)', fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:'uppercase', marginBottom:8 }}>Pontuação</p>
+              <div style={{ fontSize:54, fontWeight:900, lineHeight:1, letterSpacing:0 }}>
+                {score}<span style={{ fontSize:28, color:'var(--w60)', fontWeight:700 }}>/20</span>
+              </div>
             </div>
-            <div style={{ fontSize:13, fontWeight:800, color:faixa.color, letterSpacing:2.5, textTransform:'uppercase', marginTop:6 }}>{faixa.label}</div>
+          </div>
+
+          <div style={{ display:'flex', justifyContent:'center', marginTop:2 }}>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(240,240,248,0.055)', border:'1px solid rgba(240,240,248,0.12)', borderRadius:999, padding:'8px 14px' }}>
+              <span style={{ width:8, height:8, borderRadius:'50%', background:faixa.color, boxShadow:`0 0 16px ${faixa.color}` }} />
+              <span style={{ fontSize:12, fontWeight:900, color:faixa.color, letterSpacing:1.3, textTransform:'uppercase' }}>{faixa.label}</span>
+            </div>
           </div>
         </div>
       );
@@ -847,6 +955,12 @@
       const faixa      = getFaixa(score);
       const pendingRecs = answers.map((a, i) => a < 2 ? i : -1).filter(i => i >= 0);
       const strengths   = answers.map((a, i) => a === 2 ? i : -1).filter(i => i >= 0);
+      const dimensions = DIMENSIONS.map(dim => {
+        const points = dim.questionIndexes.reduce((sum, idx) => sum + (answers[idx] ?? 0), 0);
+        const max = dim.questionIndexes.length * 2;
+        const percent = Math.round((points / max) * 100);
+        return { ...dim, points, max, percent, status: getDimensionStatus(percent) };
+      });
 
       return (
         <div className="screen" style={{ display:'flex', flexDirection:'column', gap:28 }}>
@@ -860,6 +974,30 @@
 
           <div style={{ background:'var(--bg3)', border:'1px solid var(--w08)', borderRadius:14, padding:'18px 18px' }}>
             <p style={{ color:'var(--white)', fontSize:15, lineHeight:1.6, textAlign:'center' }}>{faixa.phrase}</p>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize:17, fontWeight:800, marginBottom:4 }}>Maturidade por área</h3>
+            <p style={{ color:'var(--w60)', fontSize:13, marginBottom:14 }}>Veja onde sua operação está mais forte e onde pede atenção.</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {dimensions.map(dim => (
+                <div key={dim.title} style={{ background:'var(--bg3)', border:'1px solid var(--w08)', borderRadius:14, padding:'14px 16px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', gap:12, alignItems:'flex-start', marginBottom:10 }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:800 }}>{dim.title}</div>
+                      <div style={{ color:'var(--w60)', fontSize:12, lineHeight:1.4, marginTop:2 }}>{dim.description}</div>
+                    </div>
+                    <div style={{ textAlign:'right', flexShrink:0 }}>
+                      <div style={{ color:dim.status.color, fontSize:12, fontWeight:800, textTransform:'uppercase', letterSpacing:1 }}>{dim.status.label}</div>
+                      <div style={{ color:'var(--w60)', fontSize:12, marginTop:2 }}>{dim.points}/{dim.max}</div>
+                    </div>
+                  </div>
+                  <div style={{ height:7, background:'var(--w08)', borderRadius:99, overflow:'hidden' }}>
+                    <div style={{ width:`${dim.percent}%`, height:'100%', background:dim.status.color, borderRadius:99, transition:'width 0.5s ease' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {pendingRecs.length > 0 && (
@@ -929,10 +1067,8 @@
           </div>
 
           <div style={{ width:'100%' }}>
-            <a href="https://locsis.com" target="_blank" rel="noopener noreferrer">
-              <button className="btn-cta" style={{ fontSize:16 }}>
-                TESTE GRÁTIS POR 15 DIAS →
-              </button>
+            <a className="btn-cta" style={{ fontSize:16 }} href="https://locsis.com" target="_blank" rel="noopener noreferrer">
+              TESTE GRÁTIS POR 15 DIAS →
             </a>
             <p style={{ color:'var(--w60)', fontSize:13, marginTop:10 }}>Sem cartão de crédito. Sem compromisso.</p>
           </div>
